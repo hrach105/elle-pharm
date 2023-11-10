@@ -1,5 +1,16 @@
 let sort = 'desc';
 let category = null;
+
+const getUniqueObjectsByGivenKey = (objects, givenKey) => {
+    const uniqueObjects = [];
+    objects.forEach((obj) => {
+        if (!uniqueObjects.some((item) => item[givenKey] === obj[givenKey])) {
+            uniqueObjects.push(obj);
+        }
+    });
+    return uniqueObjects;
+}; 
+
 const getProducts = () => {
     let API_URL = null;
     if(!category) {
@@ -23,13 +34,14 @@ $(document).ready(function () {
     getCategories();
     updateCartCount();
     displayCartItems();
-});
+}); 
 
 const displayCartItems = () => {
     const products = JSON.parse(localStorage.getItem('products'));
+    const uniqueProducts = getUniqueObjectsByGivenKey(products, "id");
     $(".cart-products").empty();
-    if(products.length > 0) {
-        products.map((product) => {
+    if(uniqueProducts.length > 0) {
+        uniqueProducts.map((product) => {
             let productHTML = `
                 <div class="cart-product-item">
                     <div class="left-side">
@@ -57,10 +69,11 @@ const displayCartItems = () => {
 $(document).on('click','.delete-cart-item', function() {
     let id = $(this).attr('data-id');
     let products = JSON.parse(localStorage.getItem("products"));
-    const updatedProducts = products.filter((item)=>item.id !== id);
+    const uniqueProducts = getUniqueObjectsByGivenKey(products, "id");
+    const updatedProducts = uniqueProducts.filter((item)=>item.id !== id);
     localStorage.setItem('products',JSON.stringify(updatedProducts));
     updateCartCount();
-    displayCartItems();
+    displayCartItems(); 
 
 
 })
@@ -68,7 +81,8 @@ $(document).on('click','.delete-cart-item', function() {
 const updateCartCount = () => {
     $(".cart-count").empty();
     const cartProducts = JSON.parse(localStorage.getItem('products'));
-    $(".cart-count").html(cartProducts.length);
+    const uniqueCartProducts = getUniqueObjectsByGivenKey(cartProducts, "id");
+    $(".cart-count").html(uniqueCartProducts.length);
 }
 
 const productList = document.getElementById('product-list');
