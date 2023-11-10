@@ -1,6 +1,5 @@
 let sort = 'desc';
 let category = null;
-
 const getUniqueObjectsByGivenKey = (objects, givenKey) => {
     const uniqueObjects = [];
     objects.forEach((obj) => {
@@ -9,8 +8,23 @@ const getUniqueObjectsByGivenKey = (objects, givenKey) => {
         }
     });
     return uniqueObjects;
-}; 
-
+};
+const addCountPropertyToObjects = (arr) => {
+    const idDetails = {};
+    arr.forEach((item) => {
+        const itemId = item.id;
+        idDetails[itemId] = idDetails[itemId] || [];
+        idDetails[itemId].push(item);
+    });
+    const objectsWithCount = Object.keys(idDetails)
+        .map((id) => ({
+            id: id,
+            count: idDetails[id].length,
+            ...getUniqueObjectsByGivenKey(idDetails[id], "id")[0],
+        }))
+        .reverse();
+    return objectsWithCount;
+};
 const getProducts = () => {
     let API_URL = null;
     if(!category) {
@@ -34,11 +48,10 @@ $(document).ready(function () {
     getCategories();
     updateCartCount();
     displayCartItems();
-}); 
-
+});
 const displayCartItems = () => {
     const products = JSON.parse(localStorage.getItem('products'));
-    const uniqueProducts = getUniqueObjectsByGivenKey(products, "id");
+    const uniqueProducts = addCountPropertyToObjects(products);
     $(".cart-products").empty();
     if(uniqueProducts.length > 0) {
         uniqueProducts.map((product) => {
@@ -48,7 +61,9 @@ const displayCartItems = () => {
                         <img src="${product.image}" width="50" alt="">
                         <p>${product.title}</p>
                     </div>
+                    
                     <div class="cart-price">
+                        <span>${product.count}</span>
                         <span>$ ${product.price}</span>
                     </div>
                     <button class="delete-cart-item" data-id="${product.id}">
@@ -63,25 +78,21 @@ const displayCartItems = () => {
     }else {
         $(".cart-products").append("<p class='empty-text'>Your cart is empty</p>");
     }
-
 }
-
 $(document).on('click','.delete-cart-item', function() {
     let id = $(this).attr('data-id');
     let products = JSON.parse(localStorage.getItem("products"));
-    const uniqueProducts = getUniqueObjectsByGivenKey(products, "id");
+    const uniqueProducts = addCountPropertyToObjects(products);
     const updatedProducts = uniqueProducts.filter((item)=>item.id !== id);
     localStorage.setItem('products',JSON.stringify(updatedProducts));
     updateCartCount();
-    displayCartItems(); 
-
-
+    displayCartItems();
 })
 
 const updateCartCount = () => {
     $(".cart-count").empty();
     const cartProducts = JSON.parse(localStorage.getItem('products'));
-    const uniqueCartProducts = getUniqueObjectsByGivenKey(cartProducts, "id");
+    const uniqueCartProducts = addCountPropertyToObjects(cartProducts);
     $(".cart-count").html(uniqueCartProducts.length);
 }
 

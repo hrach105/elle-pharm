@@ -288,6 +288,13 @@ header .bottom .search svg {
     display: flex;
     align-self: flex-end;
 }
+.cart-price span:first-child {
+    color: green;
+    font-size: 24px;
+    position: absolute;
+    left: 22%;
+    bottom: 10px;
+}
 .mini-cart-title {
     font-size: 32px;
     text-align: center;
